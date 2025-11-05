@@ -1,0 +1,48 @@
+# path: k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-price-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: rt-price-engine }
+  template:
+    metadata:
+      labels: { app: rt-price-engine }
+    spec:
+      containers:
+      - name: engine
+        image: rt-price-engine:dev
+        imagePullPolicy: IfNotPresent
+        args:
+          - --grpc-addr=:8080
+          - --symbols=BTCUSDT
+          - --exchanges=binance
+          - --interval=1s
+          # Enable when Kafka is available:
+          # - --kafka-enable=true
+          # - --kafka-brokers=kafka:9092
+          # - --kafka-topic=agg.candles.v1
+        ports:
+          - name: grpc
+            containerPort: 8080
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "128Mi"
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rt-price-engine
+spec:
+  selector: { app: rt-price-engine }
+  ports:
+    - name: grpc
+      port: 8080
+      targetPort: grpc
+      protocol: TCP

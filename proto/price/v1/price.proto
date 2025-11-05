@@ -1,0 +1,31 @@
+// path: proto/price/v1/price.proto
+syntax = "proto3";
+
+package price.v1;
+
+option go_package = "github.com/binari-digital/price-engine/proto/price/v1;pricev1";
+
+message SubscribeRequest {
+  string symbol = 1;        // e.g., "BTCUSDT"
+  int64  interval_ms = 2;   // e.g., 1000
+}
+
+message Candle {
+  string symbol = 1;
+  int64  window_start_ms = 2;
+  int64  window_end_ms   = 3;
+  double open  = 4;
+  double high  = 5;
+  double low   = 6;
+  double close = 7;
+  double volume = 8;
+  double vwap   = 9;
+  bool   is_final = 10;
+  string exchange = 11;
+  int64  last_trade_ts = 12;
+  uint64 trade_count = 13;
+}
+
+service PriceStream {
+  rpc StreamAggregates(SubscribeRequest) returns (stream Candle) {}
+}
