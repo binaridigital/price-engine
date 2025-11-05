@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/binari-digital/price-engine/pkg/aggregate"
-	"github.com/binari-digital/price-engine/pkg/common"
-	"github.com/binari-digital/price-engine/pkg/grpcapi"
-	"github.com/binari-digital/price-engine/pkg/ingest"
-	pkafka "github.com/binari-digital/price-engine/pkg/kafka"
+	"github.com/binaridigital/price-engine/pkg/aggregate"
+	"github.com/binaridigital/price-engine/pkg/common"
+	"github.com/binaridigital/price-engine/pkg/grpcapi"
+	"github.com/binaridigital/price-engine/pkg/ingest"
+	pkafka "github.com/binaridigital/price-engine/pkg/kafka"
 )
 
 func main() {

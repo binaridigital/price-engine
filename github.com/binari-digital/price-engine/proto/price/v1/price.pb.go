@@ -241,7 +241,7 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\vtrade_count\x18\r \x01(\x04R\n" +
 	"tradeCount2S\n" +
 	"\vPriceStream\x12D\n" +
-	"\x10StreamAggregates\x12\x1a.price.v1.SubscribeRequest\x1a\x10.price.v1.Candle\"\x000\x01B?Z=github.com/binari-digital/price-engine/proto/price/v1;pricev1b\x06proto3"
+	"\x10StreamAggregates\x12\x1a.price.v1.SubscribeRequest\x1a\x10.price.v1.Candle\"\x000\x01B?Z=github.com/binaridigital/price-engine/proto/price/v1;pricev1b\x06proto3"
 
 var (
 	file_price_v1_price_proto_rawDescOnce sync.Once

@@ -8,7 +8,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 
-	pricev1 "github.com/binari-digital/price-engine/proto/price/v1"
+	pricev1 "github.com/binaridigital/price-engine/proto/price/v1"
 )
 
 type Producer struct {

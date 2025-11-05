@@ -1,4 +1,5 @@
-module github.com/binari-digital/price-engine
+module github.com/binaridigital/price-engine
+
 
 go 1.24.0
 

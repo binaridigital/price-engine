@@ -1,6 +1,6 @@
 # path: Makefile
 APP=rt-price-engine
-PKG=github.com/binari-digital/rt-price-engine
+PKG=github.com/binaridigital/price-engine
 
 .PHONY: proto
 proto:

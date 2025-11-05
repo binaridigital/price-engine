@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package price.v1;
 
-option go_package = "github.com/binari-digital/price-engine/proto/price/v1;pricev1";
+option go_package = "github.com/binaridigital/price-engine/proto/price/v1;pricev1";
 
 message SubscribeRequest {
   string symbol = 1;        // e.g., "BTCUSDT"

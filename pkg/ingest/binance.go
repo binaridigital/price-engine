@@ -13,7 +13,7 @@ import (
 
 	"nhooyr.io/websocket"
 
-	"github.com/binari-digital/price-engine/pkg/common"
+	"github.com/binaridigital/price-engine/pkg/common"
 )
 
 type binanceConnector struct{}

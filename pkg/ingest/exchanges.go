@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/binari-digital/price-engine/pkg/common"
+	"github.com/binaridigital/price-engine/pkg/common"
 )
 
 type Connector interface {

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	pricev1 "github.com/binari-digital/price-engine/proto/price/v1"
+	pricev1 "github.com/binaridigital/price-engine/proto/price/v1"
 )
 
 type Hub struct {

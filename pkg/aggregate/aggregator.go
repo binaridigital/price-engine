@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/binari-digital/price-engine/pkg/common"
-	pricev1 "github.com/binari-digital/price-engine/proto/price/v1"
+	"github.com/binaridigital/price-engine/pkg/common"
+	pricev1 "github.com/binaridigital/price-engine/proto/price/v1"
 )
 
 type window struct {
