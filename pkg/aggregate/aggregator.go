@@ -2,133 +2,137 @@
 package aggregate
 
 import (
-	"context"
-	"sync"
-	"time"
+  "context"
+  "sync"
+  "time"
 
-	"github.com/binaridigital/price-engine/pkg/common"
-	pricev1 "github.com/binaridigital/price-engine/proto/price/v1"
+  "github.com/binaridigital/price-engine/pkg/common"
+  pricev1 "github.com/binaridigital/price-engine/proto/price/v1"
 )
 
 type window struct {
-	startMs int64
-	endMs   int64
-	open    float64
-	high    float64
-	low     float64
-	close   float64
-	vol     float64
-	sumPV   float64
-	sumV    float64
-	count   uint64
-	lastTs  int64
-	init    bool
+  startMs int64
+  endMs   int64
+  open    float64
+  high    float64
+  low     float64
+  close   float64
+  vol     float64
+  sumPV   float64
+  sumV    float64
+  count   uint64
+  lastTs  int64
+  init    bool
 }
 
+// TradeAlias: keep compile shields when importing in main
+type TradeAlias = common.Trade
+
 func Run(ctx context.Context, trades <-chan common.Trade, interval time.Duration) <-chan *pricev1.Candle {
-	out := make(chan *pricev1.Candle, 2048)
-	windows := make(map[string]*window)
-	var mu sync.Mutex
+  out := make(chan *pricev1.Candle, 2048)
+  windows := make(map[string]*window)
+  var mu sync.Mutex
 
-	flush := func(sym string, w *window, final bool) {
-		if w == nil || !w.init {
-			return
-		}
-		vwap := 0.0
-		if w.sumV > 0 {
-			vwap = w.sumPV / w.sumV
-		}
-		c := &pricev1.Candle{
-			Symbol:        sym,
-			WindowStartMs: w.startMs,
-			WindowEndMs:   w.endMs,
-			Open:          w.open,
-			High:          w.high,
-			Low:           w.low,
-			Close:         w.close,
-			Volume:        w.vol,
-			Vwap:          vwap,
-			IsFinal:       final,
-			Exchange:      "agg",
-			LastTradeTs:   w.lastTs,
-			TradeCount:    w.count,
-		}
-		select {
-		case out <- c:
-		default:
-			select {
-			case out <- c:
-			case <-ctx.Done():
-			}
-		}
-	}
+  flush := func(sym string, w *window, final bool) {
+    if w == nil || !w.init { return }
+    vwap := 0.0
+    if w.sumV > 0 { vwap = w.sumPV / w.sumV }
 
-	ticker := time.NewTicker(interval / 2)
-	go func() {
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case now := <-ticker.C:
-				cutoff := now.Add(-10 * time.Millisecond).UnixMilli()
-				mu.Lock()
-				for sym, w := range windows {
-					if w != nil && w.init && w.endMs <= cutoff {
-						flush(sym, w, true)
-						delete(windows, sym)
-					}
-				}
-				mu.Unlock()
-			}
-		}
-	}()
+    // Infer instrument & ISO ccy split
+    inst := pricev1.InstrumentType_IT_CRYPTO_SPOT
+    base, quote, ok := common.SplitFX(sym)
+    if ok { inst = pricev1.InstrumentType_IT_FX_SPOT }
 
-	go func() {
-		defer close(out)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case t, ok := <-trades:
-				if !ok {
-					return
-				}
-				winStart := t.TS.Truncate(interval).UnixMilli()
-				winEnd := t.TS.Truncate(interval).Add(interval).UnixMilli()
+    c := &pricev1.Candle{
+      Symbol:        sym,
+      WindowStartMs: w.startMs,
+      WindowEndMs:   w.endMs,
+      Open:          w.open,
+      High:          w.high,
+      Low:           w.low,
+      Close:         w.close,
+      Volume:        w.vol,
+      Vwap:          vwap,
+      IsFinal:       final,
+      Exchange:      "agg",
+      LastTradeTs:   w.lastTs,
+      TradeCount:    w.count,
 
-				mu.Lock()
-				w := windows[t.Symbol]
-				if w == nil || w.startMs != winStart {
-					if w != nil && w.init {
-						flush(t.Symbol, w, true)
-					}
-					w = &window{startMs: winStart, endMs: winEnd}
-					windows[t.Symbol] = w
-				}
-				if !w.init {
-					w.open = t.Price
-					w.high = t.Price
-					w.low = t.Price
-					w.init = true
-				}
-				if t.Price > w.high {
-					w.high = t.Price
-				}
-				if t.Price < w.low {
-					w.low = t.Price
-				}
-				w.close = t.Price
-				w.vol += t.Qty
-				w.sumPV += t.Price * t.Qty
-				w.sumV += t.Qty
-				w.count++
-				w.lastTs = t.TS.UnixMilli()
-				flush(t.Symbol, w, false)
-				mu.Unlock()
-			}
-		}
-	}()
+      InstrumentType: inst,
+      PriceType:      pricev1.PriceType_PT_UNSPECIFIED, // trade vs bid/ask/mid if upstream annotates later
+      BaseCcy:        base,
+      QuoteCcy:       quote,
+    }
+    select {
+    case out <- c:
+    default:
+      select {
+      case out <- c:
+      case <-ctx.Done():
+      }
+    }
+  }
 
-	return out
+  ticker := time.NewTicker(interval / 2)
+  go func() {
+    defer ticker.Stop()
+    for {
+      select {
+      case <-ctx.Done():
+        return
+      case now := <-ticker.C:
+        cutoff := now.Add(-10 * time.Millisecond).UnixMilli()
+        mu.Lock()
+        for sym, w := range windows {
+          if w != nil && w.init && w.endMs <= cutoff {
+            flush(sym, w, true)
+            delete(windows, sym)
+          }
+        }
+        mu.Unlock()
+      }
+    }
+  }()
+
+  go func() {
+    defer close(out)
+    for {
+      select {
+      case <-ctx.Done():
+        return
+      case t, ok := <-trades:
+        if !ok { return }
+
+        winStart := t.TS.Truncate(interval).UnixMilli()
+        winEnd   := t.TS.Truncate(interval).Add(interval).UnixMilli()
+
+        mu.Lock()
+        w := windows[t.Symbol]
+        if w == nil || w.startMs != winStart {
+          if w != nil && w.init { flush(t.Symbol, w, true) }
+          w = &window{startMs: winStart, endMs: winEnd}
+          windows[t.Symbol] = w
+        }
+        if !w.init {
+          w.open = t.Price
+          w.high = t.Price
+          w.low  = t.Price
+          w.init = true
+        }
+        if t.Price > w.high { w.high = t.Price }
+        if t.Price < w.low  { w.low  = t.Price }
+        w.close = t.Price
+        w.vol  += t.Qty
+        w.sumPV += t.Price * t.Qty
+        w.sumV  += t.Qty
+        w.count++
+        w.lastTs = t.TS.UnixMilli()
+
+        flush(t.Symbol, w, false)
+        mu.Unlock()
+      }
+    }
+  }()
+
+  return out
 }
