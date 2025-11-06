@@ -5,13 +5,13 @@ import (
   "context"
   "flag"
   "log"
-  "os"
   "os/signal"
   "strings"
   "syscall"
   "time"
 
   "github.com/binaridigital/price-engine/pkg/aggregate"
+  "github.com/binaridigital/price-engine/pkg/common"
   "github.com/binaridigital/price-engine/pkg/grpcapi"
   "github.com/binaridigital/price-engine/pkg/ingest"
   pkafka "github.com/binaridigital/price-engine/pkg/kafka"
@@ -53,7 +53,7 @@ func main() {
   }
 
   // Start ingestion
-  var tradeChans []<-chan ingest.TradeAlias // just type alias wrapper from aggreg package
+  var tradeChans []<-chan common.Trade
   var errChans []<-chan error
   syms := strings.Split(*symbolsCSV, ",")
   for _, c := range conns {

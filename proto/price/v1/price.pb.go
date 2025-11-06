@@ -23,9 +23,113 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type InstrumentType int32
+
+const (
+	InstrumentType_IT_UNSPECIFIED InstrumentType = 0
+	InstrumentType_IT_CRYPTO_SPOT InstrumentType = 1
+	InstrumentType_IT_FX_SPOT     InstrumentType = 2
+)
+
+// Enum value maps for InstrumentType.
+var (
+	InstrumentType_name = map[int32]string{
+		0: "IT_UNSPECIFIED",
+		1: "IT_CRYPTO_SPOT",
+		2: "IT_FX_SPOT",
+	}
+	InstrumentType_value = map[string]int32{
+		"IT_UNSPECIFIED": 0,
+		"IT_CRYPTO_SPOT": 1,
+		"IT_FX_SPOT":     2,
+	}
+)
+
+func (x InstrumentType) Enum() *InstrumentType {
+	p := new(InstrumentType)
+	*p = x
+	return p
+}
+
+func (x InstrumentType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (InstrumentType) Descriptor() protoreflect.EnumDescriptor {
+	return file_price_v1_price_proto_enumTypes[0].Descriptor()
+}
+
+func (InstrumentType) Type() protoreflect.EnumType {
+	return &file_price_v1_price_proto_enumTypes[0]
+}
+
+func (x InstrumentType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use InstrumentType.Descriptor instead.
+func (InstrumentType) EnumDescriptor() ([]byte, []int) {
+	return file_price_v1_price_proto_rawDescGZIP(), []int{0}
+}
+
+type PriceType int32
+
+const (
+	PriceType_PT_UNSPECIFIED PriceType = 0
+	PriceType_PT_TRADE       PriceType = 1 // comes from an executed trade (e.g., crypto)
+	PriceType_PT_BID         PriceType = 2
+	PriceType_PT_ASK         PriceType = 3
+	PriceType_PT_MID         PriceType = 4 // (bid+ask)/2 or provider mid
+)
+
+// Enum value maps for PriceType.
+var (
+	PriceType_name = map[int32]string{
+		0: "PT_UNSPECIFIED",
+		1: "PT_TRADE",
+		2: "PT_BID",
+		3: "PT_ASK",
+		4: "PT_MID",
+	}
+	PriceType_value = map[string]int32{
+		"PT_UNSPECIFIED": 0,
+		"PT_TRADE":       1,
+		"PT_BID":         2,
+		"PT_ASK":         3,
+		"PT_MID":         4,
+	}
+)
+
+func (x PriceType) Enum() *PriceType {
+	p := new(PriceType)
+	*p = x
+	return p
+}
+
+func (x PriceType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PriceType) Descriptor() protoreflect.EnumDescriptor {
+	return file_price_v1_price_proto_enumTypes[1].Descriptor()
+}
+
+func (PriceType) Type() protoreflect.EnumType {
+	return &file_price_v1_price_proto_enumTypes[1]
+}
+
+func (x PriceType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PriceType.Descriptor instead.
+func (PriceType) EnumDescriptor() ([]byte, []int) {
+	return file_price_v1_price_proto_rawDescGZIP(), []int{1}
+}
+
 type SubscribeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`                            // e.g., "BTCUSDT"
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`                            // e.g., "BTCUSDT", "EURUSD"
 	IntervalMs    int64                  `protobuf:"varint,2,opt,name=interval_ms,json=intervalMs,proto3" json:"interval_ms,omitempty"` // e.g., 1000
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -87,11 +191,16 @@ type Candle struct {
 	Volume        float64                `protobuf:"fixed64,8,opt,name=volume,proto3" json:"volume,omitempty"`
 	Vwap          float64                `protobuf:"fixed64,9,opt,name=vwap,proto3" json:"vwap,omitempty"`
 	IsFinal       bool                   `protobuf:"varint,10,opt,name=is_final,json=isFinal,proto3" json:"is_final,omitempty"`
-	Exchange      string                 `protobuf:"bytes,11,opt,name=exchange,proto3" json:"exchange,omitempty"`
-	LastTradeTs   int64                  `protobuf:"varint,12,opt,name=last_trade_ts,json=lastTradeTs,proto3" json:"last_trade_ts,omitempty"`
+	Exchange      string                 `protobuf:"bytes,11,opt,name=exchange,proto3" json:"exchange,omitempty"`                             // data source/provider
+	LastTradeTs   int64                  `protobuf:"varint,12,opt,name=last_trade_ts,json=lastTradeTs,proto3" json:"last_trade_ts,omitempty"` // or last quote ts
 	TradeCount    uint64                 `protobuf:"varint,13,opt,name=trade_count,json=tradeCount,proto3" json:"trade_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// New fields (ISO/regulator-aligned)
+	InstrumentType InstrumentType `protobuf:"varint,14,opt,name=instrument_type,json=instrumentType,proto3,enum=price.v1.InstrumentType" json:"instrument_type,omitempty"`
+	PriceType      PriceType      `protobuf:"varint,15,opt,name=price_type,json=priceType,proto3,enum=price.v1.PriceType" json:"price_type,omitempty"`
+	BaseCcy        string         `protobuf:"bytes,16,opt,name=base_ccy,json=baseCcy,proto3" json:"base_ccy,omitempty"`    // ISO 4217, e.g., "EUR"
+	QuoteCcy       string         `protobuf:"bytes,17,opt,name=quote_ccy,json=quoteCcy,proto3" json:"quote_ccy,omitempty"` // ISO 4217, e.g., "USD"
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Candle) Reset() {
@@ -215,6 +324,34 @@ func (x *Candle) GetTradeCount() uint64 {
 	return 0
 }
 
+func (x *Candle) GetInstrumentType() InstrumentType {
+	if x != nil {
+		return x.InstrumentType
+	}
+	return InstrumentType_IT_UNSPECIFIED
+}
+
+func (x *Candle) GetPriceType() PriceType {
+	if x != nil {
+		return x.PriceType
+	}
+	return PriceType_PT_UNSPECIFIED
+}
+
+func (x *Candle) GetBaseCcy() string {
+	if x != nil {
+		return x.BaseCcy
+	}
+	return ""
+}
+
+func (x *Candle) GetQuoteCcy() string {
+	if x != nil {
+		return x.QuoteCcy
+	}
+	return ""
+}
+
 var File_price_v1_price_proto protoreflect.FileDescriptor
 
 const file_price_v1_price_proto_rawDesc = "" +
@@ -223,7 +360,7 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\x10SubscribeRequest\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1f\n" +
 	"\vinterval_ms\x18\x02 \x01(\x03R\n" +
-	"intervalMs\"\xe4\x02\n" +
+	"intervalMs\"\x93\x04\n" +
 	"\x06Candle\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12&\n" +
 	"\x0fwindow_start_ms\x18\x02 \x01(\x03R\rwindowStartMs\x12\"\n" +
@@ -239,9 +376,28 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\bexchange\x18\v \x01(\tR\bexchange\x12\"\n" +
 	"\rlast_trade_ts\x18\f \x01(\x03R\vlastTradeTs\x12\x1f\n" +
 	"\vtrade_count\x18\r \x01(\x04R\n" +
-	"tradeCount2S\n" +
-	"\vPriceStream\x12D\n" +
-	"\x10StreamAggregates\x12\x1a.price.v1.SubscribeRequest\x1a\x10.price.v1.Candle\"\x000\x01B>Z<github.com/binaridigital/price-engine/proto/price/v1;pricev1b\x06proto3"
+	"tradeCount\x12A\n" +
+	"\x0finstrument_type\x18\x0e \x01(\x0e2\x18.price.v1.InstrumentTypeR\x0einstrumentType\x122\n" +
+	"\n" +
+	"price_type\x18\x0f \x01(\x0e2\x13.price.v1.PriceTypeR\tpriceType\x12\x19\n" +
+	"\bbase_ccy\x18\x10 \x01(\tR\abaseCcy\x12\x1b\n" +
+	"\tquote_ccy\x18\x11 \x01(\tR\bquoteCcy*H\n" +
+	"\x0eInstrumentType\x12\x12\n" +
+	"\x0eIT_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eIT_CRYPTO_SPOT\x10\x01\x12\x0e\n" +
+	"\n" +
+	"IT_FX_SPOT\x10\x02*Q\n" +
+	"\tPriceType\x12\x12\n" +
+	"\x0ePT_UNSPECIFIED\x10\x00\x12\f\n" +
+	"\bPT_TRADE\x10\x01\x12\n" +
+	"\n" +
+	"\x06PT_BID\x10\x02\x12\n" +
+	"\n" +
+	"\x06PT_ASK\x10\x03\x12\n" +
+	"\n" +
+	"\x06PT_MID\x10\x042Q\n" +
+	"\vPriceStream\x12B\n" +
+	"\x10StreamAggregates\x12\x1a.price.v1.SubscribeRequest\x1a\x10.price.v1.Candle0\x01B>Z<github.com/binaridigital/price-engine/proto/price/v1;pricev1b\x06proto3"
 
 var (
 	file_price_v1_price_proto_rawDescOnce sync.Once
@@ -255,19 +411,24 @@ func file_price_v1_price_proto_rawDescGZIP() []byte {
 	return file_price_v1_price_proto_rawDescData
 }
 
+var file_price_v1_price_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_price_v1_price_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_price_v1_price_proto_goTypes = []any{
-	(*SubscribeRequest)(nil), // 0: price.v1.SubscribeRequest
-	(*Candle)(nil),           // 1: price.v1.Candle
+	(InstrumentType)(0),      // 0: price.v1.InstrumentType
+	(PriceType)(0),           // 1: price.v1.PriceType
+	(*SubscribeRequest)(nil), // 2: price.v1.SubscribeRequest
+	(*Candle)(nil),           // 3: price.v1.Candle
 }
 var file_price_v1_price_proto_depIdxs = []int32{
-	0, // 0: price.v1.PriceStream.StreamAggregates:input_type -> price.v1.SubscribeRequest
-	1, // 1: price.v1.PriceStream.StreamAggregates:output_type -> price.v1.Candle
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: price.v1.Candle.instrument_type:type_name -> price.v1.InstrumentType
+	1, // 1: price.v1.Candle.price_type:type_name -> price.v1.PriceType
+	2, // 2: price.v1.PriceStream.StreamAggregates:input_type -> price.v1.SubscribeRequest
+	3, // 3: price.v1.PriceStream.StreamAggregates:output_type -> price.v1.Candle
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_price_v1_price_proto_init() }
@@ -280,13 +441,14 @@ func file_price_v1_price_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_price_v1_price_proto_rawDesc), len(file_price_v1_price_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      2,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_price_v1_price_proto_goTypes,
 		DependencyIndexes: file_price_v1_price_proto_depIdxs,
+		EnumInfos:         file_price_v1_price_proto_enumTypes,
 		MessageInfos:      file_price_v1_price_proto_msgTypes,
 	}.Build()
 	File_price_v1_price_proto = out.File

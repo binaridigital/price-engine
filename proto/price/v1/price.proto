@@ -44,3 +44,7 @@ message Candle {
   string         base_ccy        = 16; // ISO 4217, e.g., "EUR"
   string         quote_ccy       = 17; // ISO 4217, e.g., "USD"
 }
+
+service PriceStream {
+  rpc StreamAggregates(SubscribeRequest) returns (stream Candle);
+}

@@ -395,7 +395,9 @@ const file_price_v1_price_proto_rawDesc = "" +
 	"\n" +
 	"\x06PT_ASK\x10\x03\x12\n" +
 	"\n" +
-	"\x06PT_MID\x10\x04B>Z<github.com/binaridigital/price-engine/proto/price/v1;pricev1b\x06proto3"
+	"\x06PT_MID\x10\x042Q\n" +
+	"\vPriceStream\x12B\n" +
+	"\x10StreamAggregates\x12\x1a.price.v1.SubscribeRequest\x1a\x10.price.v1.Candle0\x01B>Z<github.com/binaridigital/price-engine/proto/price/v1;pricev1b\x06proto3"
 
 var (
 	file_price_v1_price_proto_rawDescOnce sync.Once
@@ -420,8 +422,10 @@ var file_price_v1_price_proto_goTypes = []any{
 var file_price_v1_price_proto_depIdxs = []int32{
 	0, // 0: price.v1.Candle.instrument_type:type_name -> price.v1.InstrumentType
 	1, // 1: price.v1.Candle.price_type:type_name -> price.v1.PriceType
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
+	2, // 2: price.v1.PriceStream.StreamAggregates:input_type -> price.v1.SubscribeRequest
+	3, // 3: price.v1.PriceStream.StreamAggregates:output_type -> price.v1.Candle
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -440,7 +444,7 @@ func file_price_v1_price_proto_init() {
 			NumEnums:      2,
 			NumMessages:   2,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_price_v1_price_proto_goTypes,
 		DependencyIndexes: file_price_v1_price_proto_depIdxs,
