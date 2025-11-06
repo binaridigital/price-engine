@@ -2,12 +2,25 @@
 syntax = "proto3";
 
 package price.v1;
-
 option go_package = "github.com/binaridigital/price-engine/proto/price/v1;pricev1";
 
 message SubscribeRequest {
-  string symbol = 1;        // e.g., "BTCUSDT"
+  string symbol = 1;        // e.g., "BTCUSDT", "EURUSD"
   int64  interval_ms = 2;   // e.g., 1000
+}
+
+enum InstrumentType {
+  IT_UNSPECIFIED = 0;
+  IT_CRYPTO_SPOT = 1;
+  IT_FX_SPOT     = 2;
+}
+
+enum PriceType {
+  PT_UNSPECIFIED = 0;
+  PT_TRADE = 1; // comes from an executed trade (e.g., crypto)
+  PT_BID   = 2;
+  PT_ASK   = 3;
+  PT_MID   = 4; // (bid+ask)/2 or provider mid
 }
 
 message Candle {
@@ -21,11 +34,13 @@ message Candle {
   double volume = 8;
   double vwap   = 9;
   bool   is_final = 10;
-  string exchange = 11;
-  int64  last_trade_ts = 12;
+  string exchange = 11;      // data source/provider
+  int64  last_trade_ts = 12; // or last quote ts
   uint64 trade_count = 13;
-}
 
-service PriceStream {
-  rpc StreamAggregates(SubscribeRequest) returns (stream Candle) {}
+  // New fields (ISO/regulator-aligned)
+  InstrumentType instrument_type = 14;
+  PriceType      price_type      = 15;
+  string         base_ccy        = 16; // ISO 4217, e.g., "EUR"
+  string         quote_ccy       = 17; // ISO 4217, e.g., "USD"
 }
